@@ -1,0 +1,14 @@
+Создание дампа базы:
+
+mysqldump.exe khp > d:/usr/www/khp/khp.sql
+
+mysqldump -h sapr02 -uroot -p1 khp > z:/usr/www/khp/khp.sql
+
+
+
+
+Восстановление базы из дампа:
+
+mysql khp < d:/usr/www/khp/khp.sql
+
+mysql -uroot -p1 khp < d:/usr/www/khp/khp.sql
