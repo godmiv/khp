@@ -42,6 +42,7 @@ class Controller_Order extends Controller_Template {
 			'date_start'=>array('Дата выдачи заказа','85'),
 			'user_start'=>array('Выдал заказ','90'),
 			//'date_end'=>array('Дата сдачи заказа','100'),
+			'files'=>array('','16'),
 		);
 
 		$this->columns['acceptorders'] = array(
@@ -59,6 +60,7 @@ class Controller_Order extends Controller_Template {
 			'date_start'=>array('Дата выдачи заказа','85'),
 			'user_start'=>array('Выдал заказ','90'),
 			//'date_end'=>array('Дата сдачи заказа','100'),
+			'files'=>array('','16'),
 		);
 
 		$this->columns['plan'] = array(
@@ -77,6 +79,7 @@ class Controller_Order extends Controller_Template {
 			'user_start'=>array('Выдал заказ','100'),
 			'doer'=>array('Исполнитель','120'),
 			//'date_end'=>array('Дата сдачи заказа','100'),
+			'files'=>array('','16'),
 		);
 
 		$this->columns['finish'] = array(
@@ -95,6 +98,7 @@ class Controller_Order extends Controller_Template {
 			'user_start'=>array('Выдал заказ','100'),
 			'doer'=>array('Исполнитель','100'),
 			//'date_end'=>array('Дата сдачи заказа','100'),
+			'files'=>array('','16'),
 		);
 	}
 

@@ -21,7 +21,9 @@ class Controller_File extends Controller_Template {
 		$pathname = 'upload/';
 		$sess = Session::instance()->as_array();
 		if(!isset ($sess['user'])){
-			die('Пользователь не залогинен, нужно отсекать это раньше, а не во время записи файла.');
+			//die('Пользователь не залогинен, нужно отсекать это раньше, а не во время записи файла.');
+			Session::instance()->set('msg', 'Неавторизованный пользователь. Загрузка файлов разрешена только авторизованным пользователям.');
+			$this->request->redirect(Arr::get($_POST,'returnurl'));
 		} else {
 			$id = Arr::get($_POST, 'selectedrow');
 			//$pathname .= date('Y/m/d'). '/' . $id . '/';
@@ -32,7 +34,7 @@ class Controller_File extends Controller_Template {
 			echo $uploadfile;
 			if(!is_dir($pathname)) mkdir($pathname,0,true);
 			if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
-				$query = DB::insert('files', array('order_id','owner','desc','filename','date_upload'))
+				$query = DB::insert('files', array('detal_id','owner','desc','filename','date_upload'))
 						->values(array(
 							$id,
 							$sess['user']['login'],
@@ -41,16 +43,22 @@ class Controller_File extends Controller_Template {
 							DB::expr('now()')
 							));
 				$query->execute();
-				echo "Файл корректен и был успешно загружен.\n";
+				$query = DB::update('orders')->set(array('files'=>'1'))->where('id','=',$id);
+				$query->execute();
+				//echo "Файл корректен и был успешно загружен.\n";
+				Session::instance()->set('msg', 'Файл был успешно загружен.');
+				$this->request->redirect(Arr::get($_POST,'returnurl'));
 			} else {
-				echo "Файл не сохранен, чтото пошло не так... \n";
+				//echo "Файл не сохранен, чтото пошло не так... \n";
+				Session::instance()->set('msg', 'Файл не сохранен, чтото пошло не так...');
+				$this->request->redirect(Arr::get($_POST,'returnurl'));
 			}
 		}
 	}
 	public function action_showall()
 	{
 		$data['id'] = $this->request->param('id');
-		$query = DB::select()->from('files')->where('order_id', '=', $data['id']);
+		$query = DB::select()->from('files')->where('detal_id', '=', $data['id']);
 		$result = $query->execute()->as_array();
 		if(!empty ($result)){
 			$data['result'] = $result;

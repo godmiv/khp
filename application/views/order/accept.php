@@ -1,4 +1,10 @@
 <script type="text/javascript">
+$(document).ready(function(){
+	createdialogfile();
+	createdialogmsg();
+	<?php if(isset ($_SESSION['msg'])) echo 'opendialog("#showmsg");';?>
+});
+
 $(function(){
 jQuery("#startedorders").jqGrid({
     url:'<?php echo URL::base()?>order/started',
@@ -24,10 +30,12 @@ jQuery("#startedorders").jqGrid({
     viewrecords: true,
     sortorder: "desc",
     caption: "Выданные заказы",
-	//autowidth: true,
+	autowidth: true,
 	height: "100%",
-	//editurl: "../order/edit",
-	multiselect: true
+	multiselect: true,
+	gridComplete: function(){
+		decorateColumnFile("#startedorders");
+	}
 });
 
 jQuery("#startedorders").jqGrid('navGrid','#pagerstartedorders',
@@ -63,12 +71,11 @@ jQuery("#acceptorders").jqGrid({
     viewrecords: true,
     sortorder: "desc",
     caption: "Принятые заказы",
-	//autowidth: true,
+	autowidth: true,
 	height: "100%",
-	//editurl: "../order/edit",
 	multiselect: true,
-	gridComplete: function() {
-
+	gridComplete: function(){
+		decorateColumnFile("#acceptorders");
 	}
 });
 
@@ -80,7 +87,18 @@ jQuery("#acceptorders").jqGrid('navGrid','#pageracceptdorders',
 	{multipleSearch:true, sopt:['eq','ne','lt','le','gt','ge','bw','bn','ew','en','cn','nc','in','ni'], width:600}// search options
 	);
 });
-
+function decorateColumnFile(t){
+		var ids = jQuery(t).jqGrid('getDataIDs');
+		for(var i=0;i < ids.length;i++){
+			var cl = ids[i];
+			hr = "<a href = '<?php echo URL::base()?>file/showall/"+cl+"'><img height=\"16px\" src=\"<?php echo URL::base()?>assets/img/Floppy.png\" border=\"0\"></a>";
+			//hr = "<a onclick='showfiles("+cl+")'>Test</a>";
+			if(jQuery(t).getRowData(ids[i]).files == "1"){
+				jQuery(t).jqGrid('setRowData',ids[i],{files:hr});			
+			}
+			//alert (status);
+		}
+	}
 function acceptorder(){
 	s = jQuery("#startedorders").jqGrid('getGridParam','selarrrow');
 	if(s != ''){
@@ -115,6 +133,42 @@ function notacceptorder(){
 		});
 	}
 }
+function addfile(){
+	var s = jQuery("#startedorders").jqGrid('getGridParam','selarrrow');
+	if(s.length > 1) alert('Файл можно прикрепить только к одной детали');
+	else if(s.length < 1) alert('Нужно выбрать к какой детали прикрепить файл');
+	else {
+		// Выводим диалог выбора файлов, загружаем файлы на сервер...
+		$('#startedorders').val(s);
+		opendialog('#loadfile');
+		//alert('ОК');
+	}
+}
+function showfiles(id){
+	$("#showfiles").load('<?php echo URL::base()?>file/showall/'+id).dialog();
+	return false;
+}
+function opendialog(id){
+	$(id).dialog('open');
+}
+function createdialogfile(){
+	$('#loadfile').dialog({
+		title: "Прикрепление файла",//тайтл, заголовок окна
+		width: 600,//ширина
+		height: 200,//высота
+		modal: true,//true - окно модальное, false - нет
+		autoOpen:false
+	})
+}
+function createdialogmsg(){
+	$('#showmsg').dialog({
+		title: "Сообщение",//тайтл, заголовок окна
+		width: 600,//ширина
+		height: 200,//высота
+		modal: true,//true - окно модальное, false - нет
+		autoOpen:false
+	})
+}
 </script>
 <h3>Приемка заказов</h3>
 <?php echo Form::open('order/accept');?>
@@ -127,13 +181,14 @@ function notacceptorder(){
 		<td>Коментарий (к принимаемому или возвращаемому заказу)</td>
 		<td><?php echo Form::input('comment', '', array('id'=>'comment','size'=>'70','maxlength'=>'100'));?></td>
 		<td><?php echo Form::button('clear','Очистить коментарий',array('onclick'=>'$("#comment").val("")'));?></td>
+		<td><input type="button" onclick="addfile();" value="Прикрепить файл" /></td>
 	</tr>
 	<tr>
 		<td>&nbsp;</td>
 		<td>№ Служебной</td>
 		<td><?php echo Form::input('document', '', array('id'=>'document','size'=>'70','maxlength'=>'100'));?></td>
 		<td><?php echo Form::button('clear','Очистить № Служебной',array('onclick'=>'$("#document").val("")'));?></td>
-		</td>
+		<td></td>
 	</tr>
 </table>
  <?php echo Form::close()?>
@@ -142,3 +197,8 @@ function notacceptorder(){
 <br />
 <table id="acceptorders"></table>
 <div id="pageracceptdorders"></div>
+
+<div id="loadfile">
+<?php $data['returnurl'] = 'order/accept'; echo View::factory('file/upload',$data)?>
+</div>
+<div id="showmsg"><?php if(isset($_SESSION['msg'])) { echo $_SESSION['msg']; Session::instance()->delete('msg'); }?></div>

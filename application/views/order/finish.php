@@ -17,10 +17,13 @@ jQuery("#finish").jqGrid({
     viewrecords: true,
     sortorder: "desc",
     caption: "Заказы в работе",
-	//autowidth: true,
+	autowidth: true,
 	height: "100%",
 	editurl: "<?php echo URL::base()?>order/savefinish",
-	multiselect: true
+	multiselect: true,
+	gridComplete: function(){
+		decorateColumnFile("#finish");
+	}
 });
 
 jQuery("#finish").jqGrid('navGrid','#pagerfinish',
@@ -49,10 +52,13 @@ jQuery("#finished").jqGrid({
     viewrecords: true,
     sortorder: "desc",
     caption: "Готовые заказы",
-	//autowidth: true,
+	autowidth: true,
 	height: "100%",
 	editurl: "<?php echo URL::base()?>order/savefinish",
-	multiselect: true
+	multiselect: true,
+	gridComplete: function(){
+		decorateColumnFile("#finished");
+	}
 });
 jQuery("#finished").jqGrid('navGrid','#pagerfinished',
 	{edit:false,add:false,del:false}, //options
@@ -80,6 +86,18 @@ function finishorder(){
 		});
 	}
 }
+function decorateColumnFile(t){
+		var ids = jQuery(t).jqGrid('getDataIDs');
+		for(var i=0;i < ids.length;i++){
+			var cl = ids[i];
+			hr = "<a href = '<?php echo URL::base()?>file/showall/"+cl+"'><img height=\"16px\" src=\"<?php echo URL::base()?>assets/img/Floppy.png\" border=\"0\"></a>";
+			//hr = "<a onclick='showfiles("+cl+")'>Test</a>";
+			if(jQuery(t).getRowData(ids[i]).files == "1"){
+				jQuery(t).jqGrid('setRowData',ids[i],{files:hr});			
+			}
+			//alert (status);
+		}
+	}
 </script>
 <h3>Завешение заказа</h3>
 <?php echo Form::open('order/finish');?>

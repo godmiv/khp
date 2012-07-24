@@ -30,7 +30,9 @@ $(document).ready(function(){
 	//$("#box").resizable();
 	createdialog();
 	createdialogfile();
-	<?php if(isset ($_POST['showform'])) echo 'opendialog();';?>
+	createdialogmsg();
+	<?php if(isset ($_POST['showform'])) echo 'opendialog("#dialog");';?>
+	<?php if(isset ($_SESSION['msg'])) echo 'opendialog("#showmsg");';?>
 	$('#addbutton').focus();
 });
 
@@ -62,7 +64,7 @@ jQuery("#detal").jqGrid({
     viewrecords: true,
     sortorder: "desc",
     caption: "Детали, которым не присвоен номер заказа",
-	//autowidth: true,
+	autowidth: true,
 	height: "100%",
 	editurl: "<?php echo URL::base()?>order/edit",
 	multiselect: true,
@@ -122,9 +124,8 @@ jQuery("#orders").jqGrid({
     viewrecords: true,
     sortorder: "desc",
     caption: "Детали, которым присвоен номер заказа",
-	//autowidth: true,
+	autowidth: true,
 	height: "100%",
-	//editurl: "../order/edit",
 	multiselect: true,
 	gridComplete: function(){
 		decorateColumnFile("#orders");
@@ -164,10 +165,12 @@ jQuery("#startedorders").jqGrid({
     viewrecords: true,
     sortorder: "desc",
     caption: "Выданные заказы",
-	//autowidth: true,
+	autowidth: true,
 	height: "100%",
-	//editurl: "../order/edit",
-	multiselect: true
+	multiselect: true,
+	gridComplete: function(){
+		decorateColumnFile("#startedorders");
+	}
 });
 
 jQuery("#startedorders").jqGrid('navGrid','#pagerstartedorders',
@@ -190,6 +193,9 @@ function decorateColumnFile(t){
 			//alert (status);
 		}
 	}
+function opendialog(id){
+	$(id).dialog('open');
+}
 function createdialog(){
 	$("#dialog").dialog({
 		title: "Добавление детали",//тайтл, заголовок окна
@@ -200,10 +206,6 @@ function createdialog(){
 		close: function(){$('#showform').value="false"}
 	});
 }
-function opendialog(){
-	$("#dialog").dialog('open');
-}
-
 function createdialogfile(){
 	$('#loadfile').dialog({
 		title: "Прикрепление файла",//тайтл, заголовок окна
@@ -213,10 +215,15 @@ function createdialogfile(){
 		autoOpen:false
 	})
 }
-function opendialogfile(){
-	$("#loadfile").dialog('open');
+function createdialogmsg(){
+	$('#showmsg').dialog({
+		title: "Сообщение",//тайтл, заголовок окна
+		width: 600,//ширина
+		height: 200,//высота
+		modal: true,//true - окно модальное, false - нет
+		autoOpen:false
+	})
 }
-
 function addtoorder(){
 	var s=s1=z='';
 	s = jQuery("#detal").jqGrid('getGridParam','selarrrow');
@@ -277,11 +284,10 @@ function addfile(){
 	else {
 		// Выводим диалог выбора файлов, загружаем файлы на сервер...
 		$('#selectedrow').val(s);
-		opendialogfile();
+		opendialog('#loadfile');
 		//alert('ОК');
 	}
 }
-
 function showfiles(id){
 	$("#showfiles").load('<?php echo URL::base()?>file/showall/'+id).dialog();
 	return false;
@@ -289,7 +295,7 @@ function showfiles(id){
 </script>
 
 <h3>Выдача заказов</h3>
-<input type="button" onclick="opendialog();" id="addbutton" value="Добавить деталь" />
+<input type="button" onclick="opendialog('#dialog');" id="addbutton" value="Добавить деталь" />
 <input type="button" onclick="addtoorder();" value="Добавить детали в заказ" />
 <input type="button" onclick="delfromorder();" value="Удалить детали из заказа" />
 <input type="button" onclick="addfile();" value="Прикрепить файл" />
@@ -346,16 +352,10 @@ echo form::select('osin', $opt, $codifier_instr_selected, array('id'=>'osin'));
 
 </div>
 <div id="loadfile">
-	<?php echo Form::open( 'file/upload', array('id'=>'uploadform','enctype' => 'multipart/form-data' ) );?>
-	<?php echo Form::file('userfile',array('size'=>'45'));?>
-	Описание файла: <?php echo Form::input('description',NULL,array('size'=>'30'));?>
-	<?php echo Form::submit('btnupload', 'Загрузить');?>
-	<?php echo Form::hidden('selectedrow', '0', array('id'=>'selectedrow'));?>
-	<?php echo Form::hidden('returnurl', 'order/start');?>
-	<?php echo form::close();?>
+<?php $data['returnurl'] = 'order/start'; echo View::factory('file/upload',$data)?>
 </div>
-
 <div id="showfiles"></div>
+<div id="showmsg"><?php if(isset($_SESSION['msg'])) { echo $_SESSION['msg']; Session::instance()->delete('msg'); }?></div>
 
 <table id="detal"></table>
 <div id="pager"></div>
