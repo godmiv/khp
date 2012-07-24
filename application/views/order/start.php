@@ -283,7 +283,7 @@ function addfile(){
 	else if(s.length < 1) alert('Нужно выбрать к какой детали прикрепить файл');
 	else {
 		// Выводим диалог выбора файлов, загружаем файлы на сервер...
-		$('#selectedrow').val(s);
+		$('#selectedrow').val(s);//Это скрытое поле в форме, в него записываем id выбранной записи
 		opendialog('#loadfile');
 		//alert('ОК');
 	}
