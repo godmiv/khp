@@ -3,14 +3,12 @@
 class Controller_Order extends Controller_Template {
 
 	public $template = 'tpl/default';
-
-	public $user = array('login'=>'testuser','group'=>'testgroup');
-
+	//public $user = array('login'=>'testuser','group'=>'testgroup');
 	public $columns;
 
 	public function before() {
 		parent::before();
-
+		$this->user = Session::instance()->get('user');
 		$this->columns['detal'] = $this->columns['orders'] = array(
 			'id'=>array('ID','30'),
 			'number'=>array('№ заказа','60'),
@@ -24,6 +22,7 @@ class Controller_Order extends Controller_Template {
 			//'date_start'=>array('Дата выдачи заказа','100'),
 			//'date_end'=>array('Дата сдачи заказа','100'),
 			'comment_start'=>array('Коментарий технолога','140','textarea'),//'text'=>array('Коментарий технолога','250','textarea'),
+			'user_start'=>array('Выдал заказ','90'),
 			'files'=>array('','16'),
 		);
 
@@ -112,7 +111,6 @@ class Controller_Order extends Controller_Template {
 	 *
 	 */
 	public function action_start() {
-
 		$data['title'] = 'Открытие заказа';
 
 		$data['form_osn'] = array(
@@ -177,7 +175,7 @@ class Controller_Order extends Controller_Template {
 							Arr::get($_POST, 'kodinstr'),
 							Arr::get($_POST, 'nizvins'),
 							Arr::get($_POST, 'comment_start'),
-							$this->user['login'],
+							$this->user['fio'],//$this->user['login'],
 							$this->user['group']
 							));
 				$query->execute();
@@ -255,7 +253,9 @@ class Controller_Order extends Controller_Template {
 		$query = DB::select()->from('orders')
 				->where('number', 'IS', NULL)
 				->and_where('status', 'IS', NULL)
-				->and_where('user_start', '=', $this->user['login']);
+				//->and_where('user_start', '=', $this->user['login'])
+				->or_where('status', '=', 'Возврат')
+				;
 		$this->response->headers['Content-type'] = 'text/xml;charset=utf-8';//("Content-type: text/xml;charset=utf-8");
 		$fields = array_keys($this->columns['detal']);
 		$s = $this->xmlforjqgrid($query, $fields);
@@ -269,8 +269,10 @@ class Controller_Order extends Controller_Template {
 		$this->auto_render = false;
 		$query = DB::select()->from('orders')
 				->where('number','IS NOT', NULL)
-				->and_where('user_start', '=', $this->user['login'])
-				->and_where('status', 'IS', NULL);
+				//->and_where('user_start', '=', $this->user['login'])
+				->and_where('status', 'IS', NULL)
+				->or_where('status', '=', 'Возврат')
+				;
 		$this->response->headers['Content-type'] = 'text/xml;charset=utf-8';//("Content-type: text/xml;charset=utf-8");
 		$fields = array_keys($this->columns['orders']);
 		$s = $this->xmlforjqgrid($query, $fields);

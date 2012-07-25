@@ -186,7 +186,8 @@ function decorateColumnFile(t){
 		for(var i=0;i < ids.length;i++){
 			var cl = ids[i];
 			hr = "<a href = '<?php echo URL::base()?>file/showall/"+cl+"'><img height=\"16px\" src=\"<?php echo URL::base()?>assets/img/Floppy.png\" border=\"0\"></a>";
-			//hr = "<a onclick='showfiles("+cl+")'>Test</a>";
+			//hr = "<a href = '<?php echo URL::base()?>file/showall/"+cl+"' onmouseover=\"showUrlInDialog("+cl+") \"><img height=\"16px\" src=\"<?php echo URL::base()?>assets/img/Floppy.png\" border=\"0\"></a>";
+			//hr = "<a onclick='showUrlInDialog("+cl+")'>Test</a>";
 			if(jQuery(t).getRowData(ids[i]).files == "1"){
 				jQuery(t).jqGrid('setRowData',ids[i],{files:hr});			
 			}
@@ -288,10 +289,25 @@ function addfile(){
 		//alert('ОК');
 	}
 }
+/*
 function showfiles(id){
 	$("#showfiles").load('<?php echo URL::base()?>file/showall/'+id).dialog();
 	return false;
 }
+*/
+/*
+function showUrlInDialog(id){
+	$.ajax({
+		//type: 'POST',
+	    url: '<?php echo URL::base()?>file/showall/'+id,
+	    success: function(data) {
+			$('#showfiles').html(data).dialog({
+				modal: true //true - окно модальное, false - нет
+			}).dialog('open')
+	    }
+	});
+}
+*/
 </script>
 
 <h3>Выдача заказов</h3>

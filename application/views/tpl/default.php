@@ -26,6 +26,6 @@
 				<td><?php echo View::factory('user/login');?></td>
 			</tr>
 		</table>
-		<?=$content?>
+		<?php echo $content?>
     </body>
 </html>

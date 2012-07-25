@@ -60,9 +60,13 @@ class Controller_File extends Controller_Template {
 		$data['id'] = $this->request->param('id');
 		$query = DB::select()->from('files')->where('detal_id', '=', $data['id']);
 		$result = $query->execute()->as_array();
+		print_r($result);
 		if(!empty ($result)){
 			$data['result'] = $result;
 		}
-		$this->template->content = View::factory('file/showall',$data);
+		if ($this->request->is_ajax()){
+			$this->response->body(View::factory('file/showall',$data));
+		}
+		else $this->template->content = View::factory('file/showall',$data);
 	}
 }

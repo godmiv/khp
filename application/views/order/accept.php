@@ -116,6 +116,7 @@ function acceptorder(){
 		});
 	}
 }
+
 function notacceptorder(){
 	s = jQuery("#startedorders").jqGrid('getGridParam','selarrrow');
 	if(s != ''){
