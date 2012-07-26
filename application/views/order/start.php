@@ -43,6 +43,7 @@ jQuery("#detal").jqGrid({
     mtype: 'POST',
    	colNames:["<?php echo implode('","',$colnames['detal']);?>"],
    	colModel:[
+		<?php $notEditable = array('id','status','number','files','user_start');?>
 		<?php foreach($columns['detal'] as $key=>$col){
 			echo "{name:'$key',";
 			echo "index:'$key',";
@@ -52,7 +53,7 @@ jQuery("#detal").jqGrid({
 				echo "editoptions: {rows:'5',cols:'50'},";
 			}
 			echo "editable:";
-			if($key != 'id') echo "true},\r\n";
+			if(!in_array($key, $notEditable)) echo "true},\r\n";
 			else echo "false},\r\n";
 			//echo '},';
 		};?>

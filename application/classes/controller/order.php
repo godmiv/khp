@@ -165,7 +165,8 @@ class Controller_Order extends Controller_Template {
 					'nizvins',
 					'comment_start',
 					'user_start',
-					'group_start'
+					'group_start',
+					'osin'
 					))
 						->values(array(
 							Arr::get($_POST, 'detalavto'),
@@ -176,7 +177,8 @@ class Controller_Order extends Controller_Template {
 							Arr::get($_POST, 'nizvins'),
 							Arr::get($_POST, 'comment_start'),
 							$this->user['fio'],//$this->user['login'],
-							$this->user['group']
+							$this->user['group'],
+							Arr::get($_POST, 'osin')
 							));
 				$query->execute();
 				Request::current()->redirect('order/start');
@@ -199,10 +201,12 @@ class Controller_Order extends Controller_Template {
 		if($_POST['oper'] == 'del') {
 			$query = DB::delete('orders')->where('id', '=', $_POST['id']);
 			$query->execute();
+			$status = "success";
+			$message = "delete succeeded";
 		}
 
 		if($_POST['oper'] == 'edit') {
-			//print_r($_POST);
+			print_r($_POST);
 			$id = Arr::get($_POST,'id');
 			$nosnas = Arr::get($_POST,'nosnas');
 			$kodinstr = Arr::get($_POST, 'kodinstr');
@@ -239,8 +243,8 @@ class Controller_Order extends Controller_Template {
 				$status = "fail";
 				$message = "Ошибка. Такой шифр инструмента или оснастки уже есть в базе.";
 			}
-			$s = $status.';'.$message.';'.'';
 		}
+		$s = $status.';'.$message.';'.'';
 		$this->response->body($s);
 	}
 
@@ -252,9 +256,11 @@ class Controller_Order extends Controller_Template {
 		$this->auto_render = false;
 		$query = DB::select()->from('orders')
 				->where('number', 'IS', NULL)
-				->and_where('status', 'IS', NULL)
+				->and_where_open()
+				->where('status', 'IS', NULL)
 				//->and_where('user_start', '=', $this->user['login'])
 				->or_where('status', '=', 'Возврат')
+				->and_where_close()
 				;
 		$this->response->headers['Content-type'] = 'text/xml;charset=utf-8';//("Content-type: text/xml;charset=utf-8");
 		$fields = array_keys($this->columns['detal']);
@@ -270,8 +276,10 @@ class Controller_Order extends Controller_Template {
 		$query = DB::select()->from('orders')
 				->where('number','IS NOT', NULL)
 				//->and_where('user_start', '=', $this->user['login'])
-				->and_where('status', 'IS', NULL)
+				->and_where_open()
+				->where('status', 'IS', NULL)
 				->or_where('status', '=', 'Возврат')
+				->and_where_close()
 				;
 		$this->response->headers['Content-type'] = 'text/xml;charset=utf-8';//("Content-type: text/xml;charset=utf-8");
 		$fields = array_keys($this->columns['orders']);
@@ -304,7 +312,7 @@ class Controller_Order extends Controller_Template {
 			$result = $query->execute()->as_array();
 			$nextnum = $result[0]['maxnum'] + 1;
 			if(!empty($_POST['order'])) $nextnum = Arr::get ($_POST, 'order');
-			$query = DB::update('orders')->set(array('number' => $nextnum))->where('id', 'IN', $ids);
+			$query = DB::update('orders')->set(array('number'=>$nextnum,'status'=>NULL))->where('id', 'IN', $ids);
 			$query->execute();
 			echo 'ok';
 		} else {
@@ -657,6 +665,7 @@ class Controller_Order extends Controller_Template {
 			$s .= "</row>";
 		}
 		$s .= "</rows>";
+		//$s .= Database::instance()->last_query;//debug
 		return $s;
 	}
 }
