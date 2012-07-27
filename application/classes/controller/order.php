@@ -21,7 +21,7 @@ class Controller_Order extends Controller_Template {
 			'nizvins'=>array('Изв. истр.','90'),
 			//'date_start'=>array('Дата выдачи заказа','100'),
 			//'date_end'=>array('Дата сдачи заказа','100'),
-			'comment_start'=>array('Коментарий технолога','140','textarea'),//'text'=>array('Коментарий технолога','250','textarea'),
+			'comment_start'=>array('Коментарий технолога','120','textarea'),//'text'=>array('Коментарий технолога','250','textarea'),
 			'user_start'=>array('Выдал заказ','90'),
 			'files'=>array('','16'),
 		);
@@ -36,8 +36,8 @@ class Controller_Order extends Controller_Template {
 			'nizv'=>array('Изв. оснастки','90'),
 			'kodinstr'=>array('Шифр инструмента','140'),
 			'nizvins'=>array('Изв. истр.','90'),
-			'comment_start'=>array('Коментарий технолога','140','textarea'),
-			'comment_accept'=>array('Коментарий конструктора','140'),
+			'comment_start'=>array('Коментарий технолога','120','textarea'),
+			'comment_accept'=>array('Коментарий конструктора','120'),
 			'date_start'=>array('Дата выдачи заказа','85'),
 			'user_start'=>array('Выдал заказ','90'),
 			//'date_end'=>array('Дата сдачи заказа','100'),
@@ -54,8 +54,8 @@ class Controller_Order extends Controller_Template {
 			'nizv'=>array('Изв. оснастки','90'),
 			'kodinstr'=>array('Шифр инструмента','140'),
 			'nizvins'=>array('Изв. истр.','90'),
-			'comment_start'=>array('Коментарий технолога','140','textarea'),
-			'comment_accept'=>array('Коментарий конструктора','140'),
+			'comment_start'=>array('Коментарий технолога','120','textarea'),
+			'comment_accept'=>array('Коментарий конструктора','120'),
 			'date_start'=>array('Дата выдачи заказа','85'),
 			'user_start'=>array('Выдал заказ','90'),
 			//'date_end'=>array('Дата сдачи заказа','100'),
@@ -72,8 +72,8 @@ class Controller_Order extends Controller_Template {
 			'nizv'=>array('Изв. оснастки','100'),
 			'kodinstr'=>array('Шифр инструмента','200'),
 			'nizvins'=>array('Изв. истр.','100'),
-			'comment_start'=>array('Коментарий технолога','150','textarea'),
-			'comment_accept'=>array('Коментарий конструктора','150'),
+			'comment_start'=>array('Коментарий технолога','120','textarea'),
+			'comment_accept'=>array('Коментарий конструктора','120'),
 			'date_start'=>array('Дата выдачи заказа','85'),
 			'user_start'=>array('Выдал заказ','100'),
 			'doer'=>array('Исполнитель','120'),
@@ -87,12 +87,12 @@ class Controller_Order extends Controller_Template {
 			'status'=>array('Статус','70'),
 			'detalavto'=>array('Деталь автомобиля','150'),
 			'nazvdet'=>array('Название детали','120'),
-			'nosnas'=>array('Шифр оснастки','180'),
+			'nosnas'=>array('Шифр оснастки','170'),
 			'nizv'=>array('Изв. оснастки','100'),
-			'kodinstr'=>array('Шифр инструмента','200'),
+			'kodinstr'=>array('Шифр инструмента','170'),
 			'nizvins'=>array('Изв. истр.','100'),
-			'comment_start'=>array('Коментарий технолога','150','textarea'),
-			'comment_accept'=>array('Коментарий конструктора','150'),
+			'comment_start'=>array('Коментарий технолога','120','textarea'),
+			'comment_accept'=>array('Коментарий конструктора','120'),
 			'date_start'=>array('Дата выдачи заказа','85'),
 			'user_start'=>array('Выдал заказ','100'),
 			'doer'=>array('Исполнитель','100'),
@@ -212,8 +212,26 @@ class Controller_Order extends Controller_Template {
 			$kodinstr = Arr::get($_POST, 'kodinstr');
 			$text = Arr::get($_POST, 'text');
 
+			$query = DB::select()->from('orders')->where('id','=',$id);
+			$result = $query->execute()->as_array();
+			$osin = $result[0]['osin'];//если osin == 1 - это ММ, иначе - инструмент.
+			
 			$query = DB::select()->from('orders');
-
+			$query->where_open();
+			if($osin == '1'){
+				$query->where_open()
+					->where('nosnas','=',$nosnas)
+					->and_where('kodinstr', '=', '')
+				->where_close();
+			} else {
+				$query->where_open()
+					->where('kodinstr', '=', $kodinstr)
+				->where_close();
+			}
+			$query->where_close()
+				->and_where('id', '<>', $id)
+				->and_where('status','IS', NULL);// Если деталь уже есть в невыданных заказах - не разрешаем добавление.
+/*												 // Если такая деталь уже присутствует в выданном заказе - то можно её запустить еще раз.
 			$query->where_open()
 				->where_open()
 					->where('nosnas','=',$nosnas)
@@ -225,9 +243,9 @@ class Controller_Order extends Controller_Template {
 				->where_close()
 				->and_where('id', '<>', $id)
 				->and_where('status','IS', NULL);// Если деталь уже есть в невыданных заказах - не разрешаем добавление.
-												 // Если такая деталь уже присутствует в выданном заказе - то можно её запустить еще раз.
-
+*/												 // Если такая деталь уже присутствует в выданном заказе - то можно её запустить еще раз.
 			$result = $query->execute()->as_array();
+			echo Database::instance()->last_query."\r\n";
 			if(empty ($result)){
 				$query = DB::update('orders')
 						->set(array('kodinstr' => Arr::get($_POST,'kodinstr'),
@@ -485,7 +503,7 @@ class Controller_Order extends Controller_Template {
 				->where('group', '=', 'kbimo');
 		$result = $query->execute()->as_array();
 		foreach ($result as $key=>$val){
-			$doers .= $val['login'].':'.$val['f'].';';
+			$doers .= $val['login'].':'.$val['fio'].';';
 		}
 		$doers = substr($doers,0,-1);
 
@@ -505,8 +523,8 @@ class Controller_Order extends Controller_Template {
 		if(!empty($_POST)) {
 			$id = Arr::get($_POST,'id');
 			$doer_login = Arr::get($_POST,'doer');
-			$query = DB::select('f')->from('users')->where('login','=',$doer_login);
-			$doer_f = $query->execute()->get('f');
+			$query = DB::select('fio')->from('users')->where('login','=',$doer_login);
+			$doer_f = $query->execute()->get('fio');
 
 			$query = DB::select('number')->from('orders')->where('id','=',$id);
 			$number = $query->execute()->get('number');
