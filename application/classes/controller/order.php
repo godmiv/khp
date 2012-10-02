@@ -21,7 +21,7 @@ class Controller_Order extends Controller_Template {
 			'nizvins'=>array('Изв. истр.','90'),
 			//'date_start'=>array('Дата выдачи заказа','100'),
 			//'date_end'=>array('Дата сдачи заказа','100'),
-			'comment_start'=>array('Коментарий технолога','120','textarea'),//'text'=>array('Коментарий технолога','250','textarea'),
+			'comment_start'=>array('Текст заказа','120','textarea'),//'text'=>array('Коментарий технолога','250','textarea'),
 			'user_start'=>array('Выдал заказ','90'),
 			'files'=>array('','16'),
 		);
@@ -36,7 +36,7 @@ class Controller_Order extends Controller_Template {
 			'nizv'=>array('Изв. оснастки','90'),
 			'kodinstr'=>array('Шифр инструмента','140'),
 			'nizvins'=>array('Изв. истр.','90'),
-			'comment_start'=>array('Коментарий технолога','120','textarea'),
+			'comment_start'=>array('Текст заказа','120','textarea'),
 			'comment_accept'=>array('Коментарий конструктора','120'),
 			'date_start'=>array('Дата выдачи заказа','85'),
 			'user_start'=>array('Выдал заказ','90'),
@@ -210,51 +210,38 @@ class Controller_Order extends Controller_Template {
 			$id = Arr::get($_POST,'id');
 			$nosnas = Arr::get($_POST,'nosnas');
 			$kodinstr = Arr::get($_POST, 'kodinstr');
-			$text = Arr::get($_POST, 'text');
 
 			$query = DB::select()->from('orders')->where('id','=',$id);
 			$result = $query->execute()->as_array();
 			$osin = $result[0]['osin'];//если osin == 1 - это ММ, иначе - инструмент.
 			
 			$query = DB::select()->from('orders');
-			$query->where_open();
 			if($osin == '1'){
 				$query->where_open()
 					->where('nosnas','=',$nosnas)
-					->and_where('kodinstr', '=', '')
+					->and_where('osin', '=', 1)
 				->where_close();
 			} else {
 				$query->where_open()
 					->where('kodinstr', '=', $kodinstr)
+					->and_where('osin', '<>', 1)
 				->where_close();
 			}
-			$query->where_close()
-				->and_where('id', '<>', $id)
+			$query->and_where('id', '<>', $id)
 				->and_where('status','IS', NULL);// Если деталь уже есть в невыданных заказах - не разрешаем добавление.
-/*												 // Если такая деталь уже присутствует в выданном заказе - то можно её запустить еще раз.
-			$query->where_open()
-				->where_open()
-					->where('nosnas','=',$nosnas)
-					->and_where('kodinstr', '=', '')
-				->where_close()
-				->or_where_open()
-					->where('kodinstr', '=', $kodinstr)
-				->where_close()
-				->where_close()
-				->and_where('id', '<>', $id)
-				->and_where('status','IS', NULL);// Если деталь уже есть в невыданных заказах - не разрешаем добавление.
-*/												 // Если такая деталь уже присутствует в выданном заказе - то можно её запустить еще раз.
 			$result = $query->execute()->as_array();
-			echo Database::instance()->last_query."\r\n";
+//echo Database::instance()->last_query."\r\n";
 			if(empty ($result)){
-				$query = DB::update('orders')
-						->set(array('kodinstr' => Arr::get($_POST,'kodinstr'),
-									'nosnas' => Arr::get($_POST,'nosnas'),
-									'nazvdet' => Arr::get($_POST,'nazvdet'),
-									'comment_start' => Arr::get($_POST,'comment_start'),
-							))
-						->where('id', '=', $id);
+				$query = DB::update('orders');
+				if($osin == '1') $query->set(array('nosnas' => Arr::get($_POST,'nosnas') ) );
+				$query->set(array('kodinstr' => Arr::get($_POST,'kodinstr'),
+							'nosnas' => Arr::get($_POST,'nosnas'),
+							'nazvdet' => Arr::get($_POST,'nazvdet'),
+							'comment_start' => Arr::get($_POST,'comment_start'),
+						));
+				$query->where('id', '=', $id);
 				$query->execute();
+//echo Database::instance()->last_query."\r\n";
 				$status = "success";
 				$message = "edit succeeded";
 			} else {

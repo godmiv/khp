@@ -32,7 +32,7 @@ function userlogin(){
 <?php echo Form::input('url', Request::current()->uri(), array('type'=>'hidden'));?>
 <?php echo Form::close()?>
 <?php else:?>
-Пользователь: <?php echo $sess['user']['fio'];?>
+Пользователь: <?php echo $sess['user']['fio'];?> 
 <?php echo Html::anchor('user/logout','Выйти');?>
 <?php endif; ?>
 

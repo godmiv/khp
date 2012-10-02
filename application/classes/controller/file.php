@@ -34,13 +34,14 @@ class Controller_File extends Controller_Template {
 			echo $uploadfile;
 			if(!is_dir($pathname)) mkdir($pathname,0,true);
 			if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
-				$query = DB::insert('files', array('detal_id','owner','desc','filename','date_upload'))
+				$query = DB::insert('files', array('detal_id','owner','desc','filename','date_upload','originalfilename'))
 						->values(array(
 							$id,
 							$sess['user']['login'],
 							Arr::get($_POST,'description'),
 							$uploadfile,
-							DB::expr('now()')
+							DB::expr('now()'),
+							$_FILES['userfile']['name']
 							));
 				$query->execute();
 				$query = DB::update('orders')->set(array('files'=>'1'))->where('id','=',$id);
@@ -60,7 +61,7 @@ class Controller_File extends Controller_Template {
 		$data['id'] = $this->request->param('id');
 		$query = DB::select()->from('files')->where('detal_id', '=', $data['id']);
 		$result = $query->execute()->as_array();
-		print_r($result);
+//print_r($result);
 		if(!empty ($result)){
 			$data['result'] = $result;
 		}
