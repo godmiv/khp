@@ -66,8 +66,16 @@ class Controller_File extends Controller_Template {
 			$data['result'] = $result;
 		}
 		if ($this->request->is_ajax()){
-			$this->response->body(View::factory('file/showall',$data));
+			$this->response->body(View::factory('file/showall', $data));
 		}
 		else $this->template->content = View::factory('file/showall',$data);
+	}
+	public function action_del()
+	{
+		$id = $this->request->param('id');
+		$query = DB::select()->from('files')->where('id', '=', $id);
+		$file = $query->execute()->as_array();
+		ob_start(); print_r($file); $test = ob_get_contents(); ob_end_clean();
+		$this->template->content = 'Удаление файла'.$test;
 	}
 }

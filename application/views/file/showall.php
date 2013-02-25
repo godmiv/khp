@@ -9,6 +9,7 @@
 				<td><?php echo $val; ?></td>
 			<?php endif;?>
 		<?php endforeach; ?>
+				<td><a href="<?php echo url::base().'file/del/'.$file['id']; ?>">Удалить файл</a></td>
 	</tr>
 <?php endforeach; ?>
 </table>
