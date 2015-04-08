@@ -3,13 +3,13 @@
 class Controller_Order extends Controller_Template {
 
 	public $template = 'tpl/default';
-	//public $user = array('login'=>'testuser','group'=>'testgroup');
+	//public $user = array('login'=>'testuser','grp'=>'testgroup');
 	public $columns;
 
 	public function before() {
 		parent::before();
 		$this->user = Session::instance()->get('user');
-		$this->columns['detal'] = $this->columns['orders'] = array(
+		$this->columns['detal'] = array(
 			'id'=>array('ID','30'),
 			'number'=>array('№ заказа','60'),
 			'status'=>array('Статус','60'),
@@ -25,7 +25,23 @@ class Controller_Order extends Controller_Template {
 			'user_start'=>array('Выдал заказ','90'),
 			'files'=>array('','16'),
 		);
-
+$this->columns['orders'] = array(
+			'id'=>array('ID','30'),
+			'number'=>array('№ заказа','60'),
+			'status'=>array('Статус','60'),
+			'detalavto'=>array('Деталь автомобиля','140'),
+			'nazvdet'=>array('Название детали','110'),
+			'nosnas'=>array('Шифр оснастки','170'),
+			'nizv'=>array('Изв. оснастки','90'),
+			'kodinstr'=>array('Шифр инструмента','140'),
+			'nizvins'=>array('Изв. истр.','90'),
+			//'date_start'=>array('Дата выдачи заказа','100'),
+			//'date_end'=>array('Дата сдачи заказа','100'),
+			'comment_start'=>array('Текст заказа','120','textarea'),//'text'=>array('Коментарий технолога','250','textarea'),
+			'user_start'=>array('Выдал заказ','90'),
+			'comment_accept'=>array('Коментарий конструктора','120'),
+			'files'=>array('','16'),
+		);
 		$this->columns['startedorders'] = array(
 			'id'=>array('ID','30'),
 			'number'=>array('№ заказа','60'),
@@ -177,7 +193,7 @@ class Controller_Order extends Controller_Template {
 							Arr::get($_POST, 'nizvins'),
 							Arr::get($_POST, 'comment_start'),
 							$this->user['fio'],//$this->user['login'],
-							$this->user['group'],
+							$this->user['grp'],
 							Arr::get($_POST, 'osin')
 							));
 				$query->execute();
@@ -487,7 +503,7 @@ class Controller_Order extends Controller_Template {
 		$data['title'] = 'Планирование заказа';
 		$doers = '';
 		$query = DB::select()->from('users')
-				->where('group', '=', 'kbimo');
+				->where('grp', '=', 'kbimo');
 		$result = $query->execute()->as_array();
 		foreach ($result as $key=>$val){
 			$doers .= $val['login'].':'.$val['fio'].';';

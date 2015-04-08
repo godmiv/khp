@@ -75,7 +75,16 @@ class Controller_File extends Controller_Template {
 		$id = $this->request->param('id');
 		$query = DB::select()->from('files')->where('id', '=', $id);
 		$file = $query->execute()->as_array();
-		ob_start(); print_r($file); $test = ob_get_contents(); ob_end_clean();
-		$this->template->content = 'Удаление файла'.$test;
+		$detal_id = $file[0]['detal_id'];
+		unlink($file[0]['filename']);
+		DB::delete('files')->where('id', '=', $id)->execute();
+		$query = DB::select()->from('files')->where('detal_id', '=', $detal_id);
+		if($query->execute()->count() == 0) {
+			rmdir('upload/'.$detal_id);
+			DB::update('orders')->set(array('files'=>NULL))->where('id', '=', $detal_id)->execute();
+		}
+//		ob_start(); print_r($file); $test = ob_get_contents(); ob_end_clean();
+//		$this->template->content = 'Удаление файла '.$test;
+		$this->request->redirect('order/start');
 	}
 }

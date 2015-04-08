@@ -17,5 +17,5 @@ class Controller_Welcome extends Controller_Template {
 		$data['test'] = 'test gantt';
 		$this->template->content = View::factory('gantt',$data);
 	}
-
+	
 } // End Welcome
